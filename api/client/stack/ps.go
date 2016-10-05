@@ -13,7 +13,6 @@ import (
 	"github.com/docker/docker/cli"
 	"github.com/docker/docker/opts"
 	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/swarm"
 	"github.com/spf13/cobra"
 )
 
@@ -51,10 +50,6 @@ func runPS(dockerCli *client.DockerCli, opts psOptions) error {
 
 	filter := opts.filter.Value()
 	filter.Add("label", labelNamespace+"="+opts.namespace)
-	if !opts.all && !filter.Include("desired-state") {
-		filter.Add("desired-state", string(swarm.TaskStateRunning))
-		filter.Add("desired-state", string(swarm.TaskStateAccepted))
-	}
 
 	tasks, err := client.TaskList(ctx, types.TaskListOptions{Filter: filter})
 	if err != nil {

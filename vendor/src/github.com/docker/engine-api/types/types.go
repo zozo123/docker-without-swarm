@@ -7,7 +7,6 @@ import (
 	"github.com/docker/engine-api/types/container"
 	"github.com/docker/engine-api/types/network"
 	"github.com/docker/engine-api/types/registry"
-	"github.com/docker/engine-api/types/swarm"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -255,7 +254,6 @@ type Info struct {
 	SecurityOptions    []string
 	Runtimes           map[string]Runtime
 	DefaultRuntime     string
-	Swarm              swarm.Info
 	// LiveRestoreEnabled determines whether containers should be kept
 	// running when the daemon is shutdown or upon daemon start if
 	// running containers are detected
@@ -321,18 +319,6 @@ type ContainerState struct {
 	Health     *Health `json:",omitempty"`
 }
 
-// ContainerNode stores information about the node that a container
-// is running on.  It's only available in Docker Swarm
-type ContainerNode struct {
-	ID        string
-	IPAddress string `json:"IP"`
-	Addr      string
-	Name      string
-	Cpus      int
-	Memory    int64
-	Labels    map[string]string
-}
-
 // ContainerJSONBase contains response of Remote API:
 // GET "/containers/{name:.*}/json"
 type ContainerJSONBase struct {
@@ -346,7 +332,6 @@ type ContainerJSONBase struct {
 	HostnamePath    string
 	HostsPath       string
 	LogPath         string
-	Node            *ContainerNode `json:",omitempty"`
 	Name            string
 	RestartCount    int
 	Driver          string

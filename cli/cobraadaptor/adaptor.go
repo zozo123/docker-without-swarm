@@ -5,12 +5,9 @@ import (
 	"github.com/docker/docker/api/client/container"
 	"github.com/docker/docker/api/client/image"
 	"github.com/docker/docker/api/client/network"
-	"github.com/docker/docker/api/client/node"
 	"github.com/docker/docker/api/client/plugin"
 	"github.com/docker/docker/api/client/registry"
-	"github.com/docker/docker/api/client/service"
 	"github.com/docker/docker/api/client/stack"
-	"github.com/docker/docker/api/client/swarm"
 	"github.com/docker/docker/api/client/system"
 	"github.com/docker/docker/api/client/volume"
 	"github.com/docker/docker/cli"
@@ -42,11 +39,8 @@ func NewCobraAdaptor(clientFlags *cliflags.ClientFlags) CobraAdaptor {
 	rootCmd.SetFlagErrorFunc(cli.FlagErrorFunc)
 	rootCmd.SetOutput(stdout)
 	rootCmd.AddCommand(
-		node.NewNodeCommand(dockerCli),
-		service.NewServiceCommand(dockerCli),
 		stack.NewStackCommand(dockerCli),
 		stack.NewTopLevelDeployCommand(dockerCli),
-		swarm.NewSwarmCommand(dockerCli),
 		container.NewAttachCommand(dockerCli),
 		container.NewCommitCommand(dockerCli),
 		container.NewCopyCommand(dockerCli),

@@ -9,7 +9,6 @@ import (
 
 	"github.com/docker/docker/cliconfig"
 	"github.com/docker/docker/pkg/reexec"
-	"github.com/docker/engine-api/types/swarm"
 	"github.com/go-check/check"
 )
 
@@ -213,22 +212,6 @@ func (s *DockerSwarmSuite) AddDaemon(c *check.C, joinSwarm, manager bool) *Swarm
 	d.listenAddr = fmt.Sprintf("0.0.0.0:%d", d.port)
 	err := d.StartWithBusybox("--iptables=false", "--swarm-default-advertise-addr=lo") // avoid networking conflicts
 	c.Assert(err, check.IsNil)
-
-	if joinSwarm == true {
-		if len(s.daemons) > 0 {
-			tokens := s.daemons[0].joinTokens(c)
-			token := tokens.Worker
-			if manager {
-				token = tokens.Manager
-			}
-			c.Assert(d.Join(swarm.JoinRequest{
-				RemoteAddrs: []string{s.daemons[0].listenAddr},
-				JoinToken:   token,
-			}), check.IsNil)
-		} else {
-			c.Assert(d.Init(swarm.InitRequest{}), check.IsNil)
-		}
-	}
 
 	s.portIndex++
 	s.daemonsLock.Lock()

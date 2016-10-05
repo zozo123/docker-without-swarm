@@ -8,7 +8,6 @@ import (
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/filters"
-	"github.com/docker/engine-api/types/swarm"
 )
 
 const (
@@ -27,16 +26,6 @@ func getStackFilter(namespace string) filters.Args {
 	filter := filters.NewArgs()
 	filter.Add("label", labelNamespace+"="+namespace)
 	return filter
-}
-
-func getServices(
-	ctx context.Context,
-	apiclient client.APIClient,
-	namespace string,
-) ([]swarm.Service, error) {
-	return apiclient.ServiceList(
-		ctx,
-		types.ServiceListOptions{Filter: getStackFilter(namespace)})
 }
 
 func getNetworks(

@@ -9,7 +9,6 @@ import (
 	"github.com/docker/engine-api/types/filters"
 	"github.com/docker/engine-api/types/network"
 	"github.com/docker/engine-api/types/registry"
-	"github.com/docker/engine-api/types/swarm"
 	"golang.org/x/net/context"
 )
 
@@ -17,10 +16,7 @@ import (
 type CommonAPIClient interface {
 	ContainerAPIClient
 	ImageAPIClient
-	NodeAPIClient
 	NetworkAPIClient
-	ServiceAPIClient
-	SwarmAPIClient
 	SystemAPIClient
 	VolumeAPIClient
 	ClientVersion() string
@@ -88,34 +84,6 @@ type NetworkAPIClient interface {
 	NetworkInspectWithRaw(ctx context.Context, networkID string) (types.NetworkResource, []byte, error)
 	NetworkList(ctx context.Context, options types.NetworkListOptions) ([]types.NetworkResource, error)
 	NetworkRemove(ctx context.Context, networkID string) error
-}
-
-// NodeAPIClient defines API client methods for the nodes
-type NodeAPIClient interface {
-	NodeInspectWithRaw(ctx context.Context, nodeID string) (swarm.Node, []byte, error)
-	NodeList(ctx context.Context, options types.NodeListOptions) ([]swarm.Node, error)
-	NodeRemove(ctx context.Context, nodeID string, options types.NodeRemoveOptions) error
-	NodeUpdate(ctx context.Context, nodeID string, version swarm.Version, node swarm.NodeSpec) error
-}
-
-// ServiceAPIClient defines API client methods for the services
-type ServiceAPIClient interface {
-	ServiceCreate(ctx context.Context, service swarm.ServiceSpec, options types.ServiceCreateOptions) (types.ServiceCreateResponse, error)
-	ServiceInspectWithRaw(ctx context.Context, serviceID string) (swarm.Service, []byte, error)
-	ServiceList(ctx context.Context, options types.ServiceListOptions) ([]swarm.Service, error)
-	ServiceRemove(ctx context.Context, serviceID string) error
-	ServiceUpdate(ctx context.Context, serviceID string, version swarm.Version, service swarm.ServiceSpec, options types.ServiceUpdateOptions) error
-	TaskInspectWithRaw(ctx context.Context, taskID string) (swarm.Task, []byte, error)
-	TaskList(ctx context.Context, options types.TaskListOptions) ([]swarm.Task, error)
-}
-
-// SwarmAPIClient defines API client methods for the swarm
-type SwarmAPIClient interface {
-	SwarmInit(ctx context.Context, req swarm.InitRequest) (string, error)
-	SwarmJoin(ctx context.Context, req swarm.JoinRequest) error
-	SwarmLeave(ctx context.Context, force bool) error
-	SwarmInspect(ctx context.Context) (swarm.Swarm, error)
-	SwarmUpdate(ctx context.Context, version swarm.Version, swarm swarm.Spec, flags swarm.UpdateFlags) error
 }
 
 // SystemAPIClient defines API client methods for the system

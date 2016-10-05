@@ -13,7 +13,6 @@ import (
 	"github.com/docker/docker/cli"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/network"
-	"github.com/docker/engine-api/types/swarm"
 )
 
 const (
@@ -115,17 +114,6 @@ func updateNetworks(
 	return nil
 }
 
-func convertNetworks(networks []string, namespace string, name string) []swarm.NetworkAttachmentConfig {
-	nets := []swarm.NetworkAttachmentConfig{}
-	for _, network := range networks {
-		nets = append(nets, swarm.NetworkAttachmentConfig{
-			Target:  namespace + "_" + network,
-			Aliases: []string{name},
-		})
-	}
-	return nets
-}
-
 func deployServices(
 	ctx context.Context,
 	dockerCli *client.DockerCli,
@@ -139,88 +127,6 @@ func deployServices(
 	existingServices, err := getServices(ctx, apiClient, namespace)
 	if err != nil {
 		return err
-	}
-
-	existingServiceMap := make(map[string]swarm.Service)
-	for _, service := range existingServices {
-		existingServiceMap[service.Spec.Name] = service
-	}
-
-	for internalName, service := range services {
-		name := fmt.Sprintf("%s_%s", namespace, internalName)
-
-		var ports []swarm.PortConfig
-		for _, portSpec := range service.Ports {
-			ports = append(ports, swarm.PortConfig{
-				Protocol:   swarm.PortConfigProtocol(portSpec.Protocol),
-				TargetPort: portSpec.Port,
-			})
-		}
-
-		serviceSpec := swarm.ServiceSpec{
-			Annotations: swarm.Annotations{
-				Name:   name,
-				Labels: getStackLabels(namespace, service.Labels),
-			},
-			TaskTemplate: swarm.TaskSpec{
-				ContainerSpec: swarm.ContainerSpec{
-					Image:   service.Image,
-					Command: service.Command,
-					Args:    service.Args,
-					Env:     service.Env,
-				},
-			},
-			EndpointSpec: &swarm.EndpointSpec{
-				Ports: ports,
-			},
-			Networks: convertNetworks(service.Networks, namespace, internalName),
-		}
-
-		cspec := &serviceSpec.TaskTemplate.ContainerSpec
-		if service.WorkingDir != nil {
-			cspec.Dir = *service.WorkingDir
-		}
-		if service.User != nil {
-			cspec.User = *service.User
-		}
-
-		encodedAuth := ""
-		if sendAuth {
-			// Retrieve encoded auth token from the image reference
-			image := serviceSpec.TaskTemplate.ContainerSpec.Image
-			encodedAuth, err = dockerCli.RetrieveAuthTokenFromImage(ctx, image)
-			if err != nil {
-				return err
-			}
-		}
-
-		if service, exists := existingServiceMap[name]; exists {
-			fmt.Fprintf(out, "Updating service %s (id: %s)\n", name, service.ID)
-
-			updateOpts := types.ServiceUpdateOptions{}
-			if sendAuth {
-				updateOpts.EncodedRegistryAuth = encodedAuth
-			}
-			if err := apiClient.ServiceUpdate(
-				ctx,
-				service.ID,
-				service.Version,
-				serviceSpec,
-				updateOpts,
-			); err != nil {
-				return err
-			}
-		} else {
-			fmt.Fprintf(out, "Creating service %s\n", name)
-
-			createOpts := types.ServiceCreateOptions{}
-			if sendAuth {
-				createOpts.EncodedRegistryAuth = encodedAuth
-			}
-			if _, err := apiClient.ServiceCreate(ctx, serviceSpec, createOpts); err != nil {
-				return err
-			}
-		}
 	}
 
 	return nil

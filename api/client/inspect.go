@@ -35,11 +35,6 @@ func (cli *DockerCli) CmdInspect(args ...string) error {
 		elementSearcher = cli.inspectContainers(ctx, *size)
 	case "image":
 		elementSearcher = cli.inspectImages(ctx, *size)
-	case "task":
-		if *size {
-			fmt.Fprintln(cli.err, "WARNING: --size ignored for tasks")
-		}
-		elementSearcher = cli.inspectTasks(ctx)
 	default:
 		elementSearcher = cli.inspectAll(ctx, *size)
 	}
@@ -59,33 +54,13 @@ func (cli *DockerCli) inspectImages(ctx context.Context, getSize bool) inspect.G
 	}
 }
 
-func (cli *DockerCli) inspectTasks(ctx context.Context) inspect.GetRefFunc {
-	return func(ref string) (interface{}, []byte, error) {
-		return cli.client.TaskInspectWithRaw(ctx, ref)
-	}
-}
-
 func (cli *DockerCli) inspectAll(ctx context.Context, getSize bool) inspect.GetRefFunc {
 	return func(ref string) (interface{}, []byte, error) {
 		c, rawContainer, err := cli.client.ContainerInspectWithRaw(ctx, ref, getSize)
 		if err != nil {
 			// Search for image with that id if a container doesn't exist.
 			if client.IsErrContainerNotFound(err) {
-				i, rawImage, err := cli.client.ImageInspectWithRaw(ctx, ref, getSize)
-				if err != nil {
-					if client.IsErrImageNotFound(err) {
-						// Search for task with that id if an image doesn't exists.
-						t, rawTask, err := cli.client.TaskInspectWithRaw(ctx, ref)
-						if err != nil {
-							return nil, nil, fmt.Errorf("Error: No such image, container or task: %s", ref)
-						}
-						if getSize {
-							fmt.Fprintln(cli.err, "WARNING: --size ignored for tasks")
-						}
-						return t, rawTask, nil
-					}
-					return nil, nil, err
-				}
+				i, rawImage, _ := cli.client.ImageInspectWithRaw(ctx, ref, getSize)
 				return i, rawImage, nil
 			}
 			return nil, nil, err

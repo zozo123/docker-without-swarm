@@ -3,7 +3,6 @@
 package daemon
 
 import (
-	"fmt"
 	"net"
 
 	"github.com/docker/docker/opts"
@@ -130,11 +129,5 @@ func (config *Config) GetExecRoot() string {
 }
 
 func (config *Config) isSwarmCompatible() error {
-	if config.ClusterStore != "" || config.ClusterAdvertise != "" {
-		return fmt.Errorf("--cluster-store and --cluster-advertise daemon configurations are incompatible with swarm mode")
-	}
-	if config.LiveRestore {
-		return fmt.Errorf("--live-restore daemon configuration is incompatible with swarm mode")
-	}
 	return nil
 }

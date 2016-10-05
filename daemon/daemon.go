@@ -374,10 +374,7 @@ func (daemon *Daemon) SetClusterProvider(clusterProvider cluster.Provider) {
 // IsSwarmCompatible verifies if the current daemon
 // configuration is compatible with the swarm mode
 func (daemon *Daemon) IsSwarmCompatible() error {
-	if daemon.configStore == nil {
-		return nil
-	}
-	return daemon.configStore.isSwarmCompatible()
+	return nil
 }
 
 // NewDaemon sets up everything for the daemon to be able to service

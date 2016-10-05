@@ -3,7 +3,6 @@ package client
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"golang.org/x/net/context"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/docker/docker/pkg/ioutils"
 	flag "github.com/docker/docker/pkg/mflag"
 	"github.com/docker/docker/utils"
-	"github.com/docker/engine-api/types/swarm"
 	"github.com/docker/go-units"
 )
 
@@ -68,37 +66,6 @@ func (cli *DockerCli) CmdInfo(args ...string) error {
 		fmt.Fprintf(cli.out, " Authorization:")
 		fmt.Fprintf(cli.out, " %s", strings.Join(info.Plugins.Authorization, " "))
 		fmt.Fprintf(cli.out, "\n")
-	}
-
-	fmt.Fprintf(cli.out, "Swarm: %v\n", info.Swarm.LocalNodeState)
-	if info.Swarm.LocalNodeState != swarm.LocalNodeStateInactive {
-		fmt.Fprintf(cli.out, " NodeID: %s\n", info.Swarm.NodeID)
-		if info.Swarm.Error != "" {
-			fmt.Fprintf(cli.out, " Error: %v\n", info.Swarm.Error)
-		}
-		fmt.Fprintf(cli.out, " Is Manager: %v\n", info.Swarm.ControlAvailable)
-		if info.Swarm.ControlAvailable {
-			fmt.Fprintf(cli.out, " ClusterID: %s\n", info.Swarm.Cluster.ID)
-			fmt.Fprintf(cli.out, " Managers: %d\n", info.Swarm.Managers)
-			fmt.Fprintf(cli.out, " Nodes: %d\n", info.Swarm.Nodes)
-			fmt.Fprintf(cli.out, " Orchestration:\n")
-			fmt.Fprintf(cli.out, "  Task History Retention Limit: %d\n", info.Swarm.Cluster.Spec.Orchestration.TaskHistoryRetentionLimit)
-			fmt.Fprintf(cli.out, " Raft:\n")
-			fmt.Fprintf(cli.out, "  Snapshot Interval: %d\n", info.Swarm.Cluster.Spec.Raft.SnapshotInterval)
-			fmt.Fprintf(cli.out, "  Heartbeat Tick: %d\n", info.Swarm.Cluster.Spec.Raft.HeartbeatTick)
-			fmt.Fprintf(cli.out, "  Election Tick: %d\n", info.Swarm.Cluster.Spec.Raft.ElectionTick)
-			fmt.Fprintf(cli.out, " Dispatcher:\n")
-			fmt.Fprintf(cli.out, "  Heartbeat Period: %s\n", units.HumanDuration(time.Duration(info.Swarm.Cluster.Spec.Dispatcher.HeartbeatPeriod)))
-			fmt.Fprintf(cli.out, " CA Configuration:\n")
-			fmt.Fprintf(cli.out, "  Expiry Duration: %s\n", units.HumanDuration(info.Swarm.Cluster.Spec.CAConfig.NodeCertExpiry))
-			if len(info.Swarm.Cluster.Spec.CAConfig.ExternalCAs) > 0 {
-				fmt.Fprintf(cli.out, "  External CAs:\n")
-				for _, entry := range info.Swarm.Cluster.Spec.CAConfig.ExternalCAs {
-					fmt.Fprintf(cli.out, "    %s: %s\n", entry.Protocol, entry.URL)
-				}
-			}
-		}
-		fmt.Fprintf(cli.out, " Node Address: %s\n", info.Swarm.NodeAddr)
 	}
 
 	if len(info.Runtimes) > 0 {
@@ -190,13 +157,6 @@ func (cli *DockerCli) CmdInfo(args ...string) error {
 	}
 
 	ioutils.FprintfIfTrue(cli.out, "Experimental: %v\n", info.ExperimentalBuild)
-	if info.ClusterStore != "" {
-		fmt.Fprintf(cli.out, "Cluster Store: %s\n", info.ClusterStore)
-	}
-
-	if info.ClusterAdvertise != "" {
-		fmt.Fprintf(cli.out, "Cluster Advertise: %s\n", info.ClusterAdvertise)
-	}
 
 	if info.RegistryConfig != nil && (len(info.RegistryConfig.InsecureRegistryCIDRs) > 0 || len(info.RegistryConfig.IndexConfigs) > 0) {
 		fmt.Fprintln(cli.out, "Insecure Registries:")
