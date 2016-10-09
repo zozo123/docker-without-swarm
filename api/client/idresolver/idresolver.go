@@ -1,8 +1,6 @@
 package idresolver
 
 import (
-	"fmt"
-
 	"golang.org/x/net/context"
 
 	"github.com/docker/engine-api/client"
@@ -31,7 +29,9 @@ func (r *IDResolver) Resolve(ctx context.Context, t interface{}, id string) (str
 	if r.noResolve {
 		return id, nil
 	}
-	if name, ok := r.cache[id]; ok {
+	name, ok := r.cache[id]
+
+	if ok {
 		return name, nil
 	}
 
